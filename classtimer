@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>توقيت الحصص (GMT+3)</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f6;
+            color: #333;
+            text-align: center;
+        }
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            font-size: 1.5em;
+            margin-bottom: 30px;
+        }
+        .container {
+            padding: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            min-height: 500px; 
+        }
+        .main-selection button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            margin: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: background-color 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .main-selection button:hover {
+            background-color: #2980b9;
+        }
+
+        /* Styles for Timetable Pages */
+        .timetable-page {
+            display: none; 
+        }
+        .countdown {
+            font-size: 5em;
+            font-weight: bold;
+            color: #e74c3c;
+            margin: 30px 0;
+            border: 5px solid #e74c3c;
+            display: inline-block;
+            padding: 20px;
+            border-radius: 15px;
+        }
+        .current-time-box {
+            background-color: #ecf0f1;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            font-size: 1.1em;
+            color: #2c3e50;
+        }
+        .session-info {
+            background-color: #bdc3c7;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-size: 1.2em;
+            text-align: right;
+            line-height: 1.8;
+        }
+        .session-info span {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .back-button {
+            background-color: #95a5a6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s;
+        }
+        .back-button:hover {
+            background-color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="main-page" class="container main-selection">
+        <header>📅 اختيار الفترة الدراسية</header>
+        <p>الرجاء اختيار الفترة لعرض جدول الحصص والعداد التنازلي. (التوقيت معتمد على GMT+3)</p>
+        <p>الفترة الصباحية: تبدأ 8:15 صباحاً وتنتهي 12:50 ظهراً</p>
+        <p>الفترة المسائية: تبدأ 12:50 ظهراً وتنتهي 5:25 مساءً</p>
+        <button onclick="showTimetable('morning')">الفترة الصباحية</button>
+        <button onclick="showTimetable('evening')">الفترة المسائية</button>
+    </div>
+
+    <div id="morning-page" class="container timetable-page">
+        <header>☀️ الفترة الصباحية</header>
+        <div class="current-time-box">
+            الساعة الحالية: <span id="current-time-morning"></span> | التاريخ: <span id="current-date-morning"></span>
+        </div>
+
+        <div class="countdown" id="countdown-morning">00:00:00</div>
+
+        <div class="session-info" id="session-info-morning">
+            <p><strong>النشاط الحالي:</strong> <span id="activity-name-morning">--</span></p>
+            <p><strong>وقت البداية:</strong> <span id="start-time-morning">--</span></p>
+            <p><strong>وقت النهاية:</strong> <span id="end-time-morning">--</span></p>
+            <p><strong>المدة:</strong> <span id="duration-morning">--</span></p>
+        </div>
+
+        <button class="back-button" onclick="goBack()">العودة للصفحة الرئيسية</button>
+    </div>
+
+    <div id="evening-page" class="container timetable-page">
+        <header>🌙 الفترة المسائية</header>
+        <div class="current-time-box">
+            الساعة الحالية: <span id="current-time-evening"></span> | التاريخ: <span id="current-date-evening"></span>
+        </div>
+
+        <div class="countdown" id="countdown-evening">00:00:00</div>
+
+        <div class="session-info" id="session-info-evening">
+            <p><strong>النشاط الحالي:</strong> <span id="activity-name-evening">--</span></p>
+            <p><strong>وقت البداية:</strong> <span id="start-time-evening">--</span></p>
+            <p><strong>وقت النهاية:</strong> <span id="end-time-evening">--</span></p>
+            <p><strong>المدة:</strong> <span id="duration-evening">--</span></p>
+        </div>
+
+        <button class="back-button" onclick="goBack()">العودة للصفحة الرئيسية</button>
+    </div>
+
+    <script>
+        // --- Core Time Zone Function (GMT+3) ---
+        function getGMTPlus3Time() {
+            const now = new Date();
+            // Get the time in milliseconds since epoch (UTC)
+            // now.getTimezoneOffset() returns difference in minutes from UTC (e.g., -180 for GMT+3)
+            const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
+            // Add 3 hours (3 * 60 * 60 * 1000 milliseconds) for GMT+3
+            const gmtPlus3Time = new Date(utcTime + (3 * 3600000));
+            return gmtPlus3Time;
+        }
+
+        // Helper function to format 24-hour time string (HH:MM) to 12-hour format (H:MM AM/PM)
+        function formatTime12(time24) {
+            if (time24 === "--") return "--";
+            const [hour24, minute] = time24.split(':').map(Number);
+            const period = hour24 >= 12 ? 'مساءً' : 'صباحًا';
+            let hour12 = hour24 % 12;
+            if (hour12 === 0) hour12 = 12; 
+            const minuteStr = String(minute).padStart(2, '0');
+            return `${hour12}:${minuteStr} ${period}`;
+        }
+        
+        // Helper function to format a Date object's time to 12-hour format with seconds
+        function formatCurrentTime(dateObj) {
+            const hour24 = dateObj.getHours();
+            const minute = dateObj.getMinutes();
+            const second = dateObj.getSeconds();
+
+            const period = hour24 >= 12 ? 'مساءً' : 'صباحًا';
+            let hour12 = hour24 % 12;
+            if (hour12 === 0) hour12 = 12; 
+
+            const minuteStr = String(minute).padStart(2, '0');
+            const secondStr = String(second).padStart(2, '0');
+
+            return `${hour12}:${minuteStr}:${secondStr} ${period}`;
+        }
+
+
+        // --- Session Data (24-hour format kept internally for calculation) ---
+        const morningTimetable = [
+            { name: "الطابور الصباحي", start: "08:15", end: "08:30", duration: "15 دقيقة" }, 
+            { name: "الحصة الأولى", start: "08:30", end: "09:05", duration: "35 دقيقة" }, 
+            { name: "الحصة الثانية", start: "09:05", end: "09:40", duration: "35 دقيقة" }, 
+            { name: "الحصة الثالثة", start: "09:40", end: "10:15", duration: "35 دقيقة" }, 
+            { name: "الحصة الرابعة", start: "10:15", end: "10:50", duration: "35 دقيقة" }, 
+            { name: "الفرصة (الاستراحة)", start: "10:50", end: "11:05", duration: "15 دقيقة" }, 
+            { name: "الحصة الخامسة", start: "11:05", end: "11:40", duration: "35 دقيقة" }, 
+            { name: "الحصة السادسة", start: "11:40", end: "12:15", duration: "35 دقيقة" }, 
+            { name: "الحصة السابعة", start: "12:15", end: "12:50", duration: "35 دقيقة" }, 
+            { name: "انتهاء الدوام الصباحي", start: "12:50", end: "12:50", duration: "--" } 
+        ]; 
+
+        const eveningTimetable = [
+            { name: "الطابور المسائي", start: "12:50", end: "13:05", duration: "15 دقيقة" }, 
+            { name: "الحصة الأولى", start: "13:05", end: "13:40", duration: "35 دقيقة" }, 
+            { name: "الحصة الثانية", start: "13:40", end: "14:15", duration: "35 دقيقة" }, 
+            { name: "الحصة الثالثة", start: "14:15", end: "14:50", duration: "35 دقيقة" }, 
+            { name: "الحصة الرابعة", start: "14:50", end: "15:25", duration: "35 دقيقة" }, 
+            { name: "الفرصة (الاستراحة)", start: "15:25", end: "15:40", duration: "15 دقيقة" }, 
+            { name: "الحصة الخامسة", start: "15:40", end: "16:15", duration: "35 دقيقة" }, 
+            { name: "الحصة السادسة", start: "16:15", end: "16:50", duration: "35 دقيقة" }, 
+            { name: "الحصة السابعة", start: "16:50", end: "17:25", duration: "35 دقيقة" }, 
+            { name: "انتهاء الدوام المسائي", start: "17:25", end: "17:25", duration: "--" } 
+        ]; 
+
+        let currentSession = null; 
+        let intervalId = null; 
+
+        // --- Navigation Functions (Unchanged) ---
+        function showTimetable(session) {
+            currentSession = session;
+            document.getElementById('main-page').style.display = 'none';
+
+            if (intervalId) {
+                clearInterval(intervalId);
+            }
+
+            if (session === 'morning') {
+                document.getElementById('morning-page').style.display = 'block';
+                document.getElementById('evening-page').style.display = 'none';
+                startClockAndCountdown('morning');
+            } else if (session === 'evening') {
+                document.getElementById('morning-page').style.display = 'none';
+                document.getElementById('evening-page').style.display = 'block';
+                startClockAndCountdown('evening');
+            }
+        }
+
+        function goBack() {
+            currentSession = null;
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+            document.getElementById('main-page').style.display = 'block';
+            document.getElementById('morning-page').style.display = 'none';
+            document.getElementById('evening-page').style.display = 'none';
+        }
+
+        // --- Clock and Countdown Logic ---
+        function startClockAndCountdown(session) {
+            const timetable = session === 'morning' ? morningTimetable : eveningTimetable;
+            const idPrefix = session === 'morning' ? 'morning' : 'evening';
+
+            function updateClockAndCountdown() {
+                if (currentSession !== session) return; 
+
+                // Get the current time adjusted to GMT+3
+                const now = getGMTPlus3Time();
+                
+                const nowHour = now.getHours();
+                const nowMinute = now.getMinutes();
+                const nowTotalMinutes = nowHour * 60 + nowMinute;
+
+                // 1. Update Current Time and Date Display (using GMT+3 time)
+                const timeString12 = formatCurrentTime(now);
+                const dateString = now.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
+                
+                document.getElementById(`current-time-${idPrefix}`).textContent = timeString12;
+                document.getElementById(`current-date-${idPrefix}`).textContent = dateString;
+
+                let currentActivity = null;
+                let nextBoundaryTime = null;
+
+                // 2. Determine Current Activity and Next Boundary Time
+                for (let i = 0; i < timetable.length; i++) {
+                    const sessionStartHour = parseInt(timetable[i].start.substring(0, 2));
+                    const sessionStartMinute = parseInt(timetable[i].start.substring(3, 5));
+                    const sessionEndHour = parseInt(timetable[i].end.substring(0, 2));
+                    const sessionEndMinute = parseInt(timetable[i].end.substring(3, 5));
+
+                    const sessionStartTotalMinutes = sessionStartHour * 60 + sessionStartMinute;
+                    const sessionEndTotalMinutes = sessionEndHour * 60 + sessionEndMinute;
+                    
+                    // Create Date objects for comparison, ensuring they are based on the same GMT+3 date as 'now'
+                    const sessionEndDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), sessionEndHour, sessionEndMinute, 0);
+                    const sessionStartDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), sessionStartHour, sessionStartMinute, 0);
+
+                    // A. Check for time *before* the first session
+                    if (i === 0 && nowTotalMinutes < sessionStartTotalMinutes) {
+                        currentActivity = { name: "انتظار بداية الدوام", start: "--", end: timetable[0].start, duration: "--" };
+                        nextBoundaryTime = sessionStartDate;
+                        break;
+                    }
+                    
+                    // B. Check if current time falls *within* this session's range
+                    if (nowTotalMinutes >= sessionStartTotalMinutes && nowTotalMinutes < sessionEndTotalMinutes) {
+                        currentActivity = timetable[i];
+                        nextBoundaryTime = sessionEndDate;
+                        break;
+                    }
+                    
+                    // C. Check for time *between* sessions (if it's not the last session)
+                    if (i < timetable.length - 1) {
+                        const nextSessionStartHour = parseInt(timetable[i+1].start.substring(0, 2));
+                        const nextSessionStartMinute = parseInt(timetable[i+1].start.substring(3, 5));
+                        const nextSessionStartTotalMinutes = nextSessionStartHour * 60 + nextSessionStartMinute;
+
+                        if (nowTotalMinutes >= sessionEndTotalMinutes && nowTotalMinutes < nextSessionStartTotalMinutes) {
+                            currentActivity = { 
+                                name: `فاصل بين ${timetable[i].name} و ${timetable[i+1].name}`, 
+                                start: timetable[i].end, 
+                                end: timetable[i+1].start, 
+                                duration: `${nextSessionStartTotalMinutes - sessionEndTotalMinutes} دقيقة`
+                            };
+                            nextBoundaryTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), nextSessionStartHour, nextSessionStartMinute, 0);
+                            break;
+                        }
+                    }
+                }
+
+                // 3. Update Session Info 
+                if (currentActivity) {
+                    document.getElementById(`activity-name-${idPrefix}`).textContent = currentActivity.name;
+                    document.getElementById(`start-time-${idPrefix}`).textContent = formatTime12(currentActivity.start);
+                    document.getElementById(`end-time-${idPrefix}`).textContent = formatTime12(currentActivity.end);
+                    document.getElementById(`duration-${idPrefix}`).textContent = currentActivity.duration; 
+                    
+                } else {
+                    // Time after all sessions have ended
+                    document.getElementById(`activity-name-${idPrefix}`).textContent = "انتهى الدوام لهذا اليوم";
+                    document.getElementById(`start-time-${idPrefix}`).textContent = "--";
+                    document.getElementById(`end-time-${idPrefix}`).textContent = "--";
+                    document.getElementById(`duration-${idPrefix}`).textContent = "--";
+                    document.getElementById(`countdown-${idPrefix}`).textContent = "انتهى";
+                    clearInterval(intervalId); 
+                    return; 
+                }
+
+                // 4. Update Countdown
+                if (nextBoundaryTime) {
+                    const timeLeft = nextBoundaryTime.getTime() - now.getTime();
+                    
+                    if (timeLeft > 0) {
+                        const seconds = Math.floor(timeLeft / 1000);
+                        const h = Math.floor(seconds / 3600);
+                        const m = Math.floor((seconds % 3600) / 60);
+                        const s = seconds % 60;
+
+                        const countdownString = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+                        document.getElementById(`countdown-${idPrefix}`).textContent = countdownString;
+                    } else {
+                        // Boundary reached, force an immediate update to jump to the next session
+                        updateClockAndCountdown();
+                    }
+                }
+            }
+
+            // Run the update function immediately and store the interval ID
+            updateClockAndCountdown(); 
+            intervalId = setInterval(updateClockAndCountdown, 1000);
+        }
+
+    </script>
+</body>
+</html>
