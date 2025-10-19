@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>توقيت الحصص (متجاوب)</title>
+    <title>توقيت الحصص (متجاوب ومعدل)</title>
     <style>
         /* Base Styles for All Screens */
         body {
@@ -22,20 +22,20 @@
             margin-bottom: 20px;
         }
         .container {
-            padding: 10px; /* Reduced padding for mobile */
+            padding: 10px; 
             max-width: 1000px;
             margin: 0 auto;
             background-color: white;
             box-shadow: 0 0 10px rgba(0,0,0,0.05);
             border-radius: 8px;
             min-height: 500px; 
-            box-sizing: border-box; /* Include padding in the element's total width and height */
+            box-sizing: border-box; 
         }
         
-        /* Main Selection Layout (using Flexbox) */
+        /* Main Selection Layout */
         .main-selection {
             display: flex;
-            flex-direction: column; /* Stack buttons vertically on small screens */
+            flex-direction: column; 
             align-items: center;
             justify-content: center;
         }
@@ -55,7 +55,7 @@
             font-size: 1.2em;
             transition: background-color 0.3s;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            width: 80%; /* Takes up 80% of container width on small screens */
+            width: 80%; 
             max-width: 400px;
         }
         .main-selection button:hover {
@@ -71,13 +71,13 @@
             padding: 10px;
             margin-bottom: 15px;
             border-radius: 5px;
-            font-size: 1em; /* Smaller font on mobile */
+            font-size: 1em; 
             color: #2c3e50;
             line-height: 1.6;
         }
-        /* Countdown adjustments */
+        /* **Countdown adjustments (Smaller)** */
         .countdown {
-            font-size: 3.5em; /* Smaller font for countdown on mobile */
+            font-size: 3em; /* تم تقليل الحجم من 3.5em */
             font-weight: bold;
             color: #e74c3c;
             margin: 20px 0;
@@ -85,7 +85,7 @@
             display: inline-block;
             padding: 15px;
             border-radius: 15px;
-            min-width: 250px;
+            min-width: 200px; /* تم تصغير الحد الأدنى للعرض */
         }
         /* Session Info adjustments */
         .session-info {
@@ -100,7 +100,7 @@
         .session-info p {
             margin: 8px 0;
             padding-bottom: 5px;
-            border-bottom: 1px dashed #7f8c8d; /* Separator lines for clarity */
+            border-bottom: 1px dashed #7f8c8d; 
         }
         .session-info p:last-child {
             border-bottom: none;
@@ -127,22 +127,20 @@
             header {
                 font-size: 2em;
             }
-            /* Change main selection buttons to row layout */
             .main-selection {
                 flex-direction: row;
                 gap: 20px;
             }
             .main-selection button {
-                width: auto; /* Allow buttons to size based on content */
+                width: auto; 
                 max-width: none;
-                flex-grow: 1; /* Distribute space equally */
+                flex-grow: 1; 
             }
-            /* Increase font size for better visibility on large screens */
             .current-time-box {
                 font-size: 1.2em;
             }
             .countdown {
-                font-size: 5em;
+                font-size: 4em; /* تم تعديل الحجم ليصبح 4em على الشاشات الكبيرة */
                 padding: 20px;
             }
             .session-info {
@@ -205,9 +203,7 @@
         // --- Core Time Zone Function (GMT+3) ---
         function getGMTPlus3Time() {
             const now = new Date();
-            // Get the time in milliseconds since epoch (UTC)
             const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
-            // Add 3 hours (3 * 60 * 60 * 1000 milliseconds) for GMT+3
             const gmtPlus3Time = new Date(utcTime + (3 * 3600000));
             return gmtPlus3Time;
         }
