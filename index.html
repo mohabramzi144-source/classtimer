@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>توقيت الحصص (GMT+3)</title>
+    <title>توقيت الحصص (متجاوب)</title>
     <style>
+        /* Base Styles for All Screens */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
@@ -18,68 +19,93 @@
             color: white;
             padding: 20px;
             font-size: 1.5em;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
         .container {
-            padding: 20px;
-            max-width: 900px;
+            padding: 10px; /* Reduced padding for mobile */
+            max-width: 1000px;
             margin: 0 auto;
             background-color: white;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
             border-radius: 8px;
             min-height: 500px; 
+            box-sizing: border-box; /* Include padding in the element's total width and height */
+        }
+        
+        /* Main Selection Layout (using Flexbox) */
+        .main-selection {
+            display: flex;
+            flex-direction: column; /* Stack buttons vertically on small screens */
+            align-items: center;
+            justify-content: center;
+        }
+        .main-selection p {
+            max-width: 90%;
+            margin: 10px auto;
+            font-size: 1.1em;
         }
         .main-selection button {
             background-color: #3498db;
             color: white;
             border: none;
             padding: 15px 30px;
-            margin: 10px;
+            margin: 10px 5px;
             border-radius: 5px;
             cursor: pointer;
             font-size: 1.2em;
             transition: background-color 0.3s;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            width: 80%; /* Takes up 80% of container width on small screens */
+            max-width: 400px;
         }
         .main-selection button:hover {
             background-color: #2980b9;
         }
 
-        /* Styles for Timetable Pages */
+        /* Timetable Layout */
         .timetable-page {
             display: none; 
-        }
-        .countdown {
-            font-size: 5em;
-            font-weight: bold;
-            color: #e74c3c;
-            margin: 30px 0;
-            border: 5px solid #e74c3c;
-            display: inline-block;
-            padding: 20px;
-            border-radius: 15px;
         }
         .current-time-box {
             background-color: #ecf0f1;
             padding: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             border-radius: 5px;
-            font-size: 1.1em;
+            font-size: 1em; /* Smaller font on mobile */
             color: #2c3e50;
+            line-height: 1.6;
         }
+        /* Countdown adjustments */
+        .countdown {
+            font-size: 3.5em; /* Smaller font for countdown on mobile */
+            font-weight: bold;
+            color: #e74c3c;
+            margin: 20px 0;
+            border: 4px solid #e74c3c;
+            display: inline-block;
+            padding: 15px;
+            border-radius: 15px;
+            min-width: 250px;
+        }
+        /* Session Info adjustments */
         .session-info {
             background-color: #bdc3c7;
             padding: 15px;
             border-radius: 5px;
             margin-top: 20px;
-            font-size: 1.2em;
+            font-size: 1.1em;
             text-align: right;
-            line-height: 1.8;
+            line-height: 1.6;
         }
-        .session-info span {
-            font-weight: bold;
-            color: #2c3e50;
+        .session-info p {
+            margin: 8px 0;
+            padding-bottom: 5px;
+            border-bottom: 1px dashed #7f8c8d; /* Separator lines for clarity */
         }
+        .session-info p:last-child {
+            border-bottom: none;
+        }
+
         .back-button {
             background-color: #95a5a6;
             color: white;
@@ -89,10 +115,42 @@
             border-radius: 5px;
             cursor: pointer;
             font-size: 1em;
-            transition: background-color 0.3s;
+            width: 70%;
+            max-width: 300px;
         }
-        .back-button:hover {
-            background-color: #7f8c8d;
+
+        /* --- Media Queries for Larger Screens (Tablets and Desktops) --- */
+        @media (min-width: 600px) {
+            .container {
+                padding: 20px 40px;
+            }
+            header {
+                font-size: 2em;
+            }
+            /* Change main selection buttons to row layout */
+            .main-selection {
+                flex-direction: row;
+                gap: 20px;
+            }
+            .main-selection button {
+                width: auto; /* Allow buttons to size based on content */
+                max-width: none;
+                flex-grow: 1; /* Distribute space equally */
+            }
+            /* Increase font size for better visibility on large screens */
+            .current-time-box {
+                font-size: 1.2em;
+            }
+            .countdown {
+                font-size: 5em;
+                padding: 20px;
+            }
+            .session-info {
+                font-size: 1.3em;
+            }
+            .back-button {
+                width: 50%;
+            }
         }
     </style>
 </head>
@@ -100,7 +158,7 @@
 
     <div id="main-page" class="container main-selection">
         <header>📅 اختيار الفترة الدراسية</header>
-        <p>الرجاء اختيار الفترة لعرض جدول الحصص والعداد التنازلي. (التوقيت معتمد على GMT+3)</p>
+        <p>الرجاء اختيار الفترة لعرض جدول الحصص والعداد التنازلي. **(التوقيت معتمد على GMT+3)**</p>
         <p>الفترة الصباحية: تبدأ 8:15 صباحاً وتنتهي 12:50 ظهراً</p>
         <p>الفترة المسائية: تبدأ 12:50 ظهراً وتنتهي 5:25 مساءً</p>
         <button onclick="showTimetable('morning')">الفترة الصباحية</button>
@@ -148,7 +206,6 @@
         function getGMTPlus3Time() {
             const now = new Date();
             // Get the time in milliseconds since epoch (UTC)
-            // now.getTimezoneOffset() returns difference in minutes from UTC (e.g., -180 for GMT+3)
             const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
             // Add 3 hours (3 * 60 * 60 * 1000 milliseconds) for GMT+3
             const gmtPlus3Time = new Date(utcTime + (3 * 3600000));
@@ -252,7 +309,6 @@
             function updateClockAndCountdown() {
                 if (currentSession !== session) return; 
 
-                // Get the current time adjusted to GMT+3
                 const now = getGMTPlus3Time();
                 
                 const nowHour = now.getHours();
@@ -279,7 +335,6 @@
                     const sessionStartTotalMinutes = sessionStartHour * 60 + sessionStartMinute;
                     const sessionEndTotalMinutes = sessionEndHour * 60 + sessionEndMinute;
                     
-                    // Create Date objects for comparison, ensuring they are based on the same GMT+3 date as 'now'
                     const sessionEndDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), sessionEndHour, sessionEndMinute, 0);
                     const sessionStartDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), sessionStartHour, sessionStartMinute, 0);
 
